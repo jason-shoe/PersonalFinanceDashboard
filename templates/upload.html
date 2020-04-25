@@ -1,0 +1,111 @@
+<html>
+   <head>
+      <title>Flask app</title>
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/upload.css') }}">
+    </head>
+   <body>
+      <div class="sidebar">
+         <p class="project-title">Personal Finance Dashboard<p>
+         <ul class="sidebar-links">
+            <li><a id="selected" href="/">Databases</a></li>
+            <li><a href="/graph">Graphs</a></li>
+         </ul>
+      </div>
+      <div class="right-stuff">
+         <div class = "row-flex">
+            <div class ="half-div">
+               <h1>File Upload</h1>
+               <form action = "/uploader" method = "POST" 
+                  enctype = "multipart/form-data">
+                  <input type = "file" name = "file" />
+                  <input type = "submit"/>
+               </form>
+               <form action = "/initialize">
+                  <button>Reset Databases</button>
+               </form>
+            </div>
+
+            <div class ="half-div">
+               <h1>File List</h1>
+               <table>
+                  <tr>
+                     <th>Date</th>
+                     <th>Filename</th>
+                  </tr>
+                  {% for item in files %}
+                  <tr>
+                     <td>{{item[1]}}</td>
+                     <td>{{item[2]}}</td>
+                  </tr>
+                  {% endfor %}
+               </table>
+            </div>
+         </div>
+         <div class="row-flex">
+            <div class="half-div">
+               <h1>Venmo Transactions</h1>
+               <table id="scrolling-table">
+                  <tr>
+                     <th>Date</th>
+                     <th>Note</th>
+                     <th>Sender</th>
+                     <th>Recipient</th>
+                     <th>Amount</th>
+                  </tr>
+                  {% for item in venmo %}
+                  <tr>
+                     <td>{{item[1]}}</td>
+                     <td>{{item[2]}}</td>
+                     <td>{{item[3]}}</td>
+                     <td>{{item[4]}}</td>
+                     <td>{{item[5]}}</td>
+                  </tr>
+                  {% endfor %}
+               </table>
+            </div>
+
+            <div class="half-div">
+               <h1>Debit Card Transactions</h1>
+               <table id="scrolling-table">
+                  <tr>
+                     <th>Date</th>
+                     <th>Payee</th>
+                     <th>Amount</th>
+                  </tr>
+                  {% for item in credit %}
+                  <tr>
+                     <td>{{item[1]}}</td>
+                     <td>{{item[2]}}</td>
+                     <td>{{item[4]}}</td>
+                     
+                  </tr>
+                  {% endfor %}
+               </table>
+            </div>
+         </div>
+         
+         <div class="row-flex">
+            <div class="full-div">
+               <h1>Debit Card Transactions</h1>
+               <table id="scrolling-table">
+                  <tr>
+                     <th>Date</th>
+                     <th>Description</th>
+                     <th>Amount</th>
+                     <th>Balance</th>
+                  </tr>
+                  {% for item in debit %}
+                  <tr>
+                     <td>{{item[1]}}</td>
+                     <td>{{item[2]}}</td>
+                     <td>{{item[3]}}</td>
+                     <td>{{item[4]}}</td>
+                  </tr>
+                  {% endfor %}
+               </table>
+            </div>
+         </div>
+         
+      </div>
+   </body>
+</html>

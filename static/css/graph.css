@@ -1,0 +1,214 @@
+body{
+    font-family: 'Roboto';
+    font-size: 22px;
+    background-color: var(--dark-blue);
+    color: var(--gray);
+    padding: 1%;
+    margin: 0px;
+}
+
+:root{
+    --blue: #283141;
+    --dark-blue: #1c2431;
+    --light-blue: #178be6;
+    --medium-blue: #1481d4;
+    --table-blue: #303b4c;
+    --green: #8cc350;
+    --yellow: #fec62e;
+    --cyan: #1fbed2;
+    --red: #fc5d56;
+    --purple: #b39ed7;
+    --white: #ffffff;
+    --gray: #737e8c;
+
+}
+
+h1{
+    color: var(--white);
+    font-size: 20px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+}
+.project-title{
+    font-weight: bold;
+    color: var(--white);
+    font-size: 30px;
+    margin: 5px;
+}
+.right-stuff{
+    width: 100%;
+}
+.row-flex{
+    margin-top: 20px;
+    display:flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.sidebar{
+    width: 100%;
+    background-color: var(--blue);
+    margin-right: 0px;
+    display: flex;
+    flex-direction: row;
+
+    justify-content: space-between;
+    margin-bottom: 10px;
+
+}
+.sidebar-links{
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    margin: 0;
+    
+}
+.sidebar-links li{
+    margin: 10px 10px;
+    
+}
+
+.sidebar-links a{
+    font-size: 30px;
+    text-decoration: none;
+    color: var(--yellow);
+    opacity: 0.6;
+}
+.sidebar-links a:hover{
+    opacity: 1;
+}
+#selected{
+    opacity: 1; 
+}
+
+.half-graph{
+    width: 32%;
+    background-color: var(--blue);
+}
+.balances{
+    width: 20%;
+    background-color: var(--blue);
+    display: flex;
+    flex-flow: column;
+}
+
+.all-income-graph{
+    width: 34%;
+    background-color: var(--blue);
+}
+.income-graph{
+    width: 44%;
+    background-color: var(--blue);
+}
+
+.full-graph{
+    width: 79%;
+    background-color: var(--blue);
+}
+
+table{
+    overflow-y: scroll;
+    border-collapse: collapse;
+    width: 100%;
+}
+#scrolling-table {
+    display: block;
+    height: 500px;
+    overflow-y: scroll;
+    border-collapse: collapse;
+    width: 100%;
+}
+  
+th, td {
+    text-align: left;
+    padding: 8px;
+}
+
+th{
+    color: var(--white);
+}
+tbody{
+    width: 100%;
+    display: table;
+}
+
+tr:nth-child(even) {background-color: var(--table-blue);}
+
+#creditBalance{
+    width:100%;
+}
+
+.list-div{
+    width: 20%;
+    background-color: var(--blue);
+    display: flex;
+    flex-direction: column;
+}
+#list{
+    padding: 10px;
+    font-size: 10px;
+    height: 300px;
+}
+
+.graph-comp-header{
+    margin-left: 20px;
+    margin-top: 10px;
+}
+
+#list table{
+    display: block; 
+    height: 90%; 
+    overflow-y: scroll; 
+    border-collapse: collapse; 
+    width: 100%;
+}
+#list tr{
+    width:100%;
+}
+
+#list td{
+    font-size: 12px;
+}
+
+#list p{
+    width: 100%;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 3px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid var(--gray);
+}
+
+#my_dataviz4{
+    margin: 0 auto;
+}
+
+#selectIncome{
+    width:calc(100% - 40px);
+    margin-left: 20px;
+    border: 6px solid transparent;
+    border-color: #fff transparent transparent transparent;
+    margin-top: 10px;
+}
+
+.balance-table{
+    margin: auto 0;
+    width:calc(100% - 40px);
+    margin-left: 20px;
+    text-align: center;
+    flex-grow: 1;
+}
+.balance-table tr{
+    height: 20%;
+}
+.balance-table td{
+    text-align: center;
+}
+.balance-table th{
+    text-align: center;
+}
+
+.dataviz4-container{
+    height:300px;
+}

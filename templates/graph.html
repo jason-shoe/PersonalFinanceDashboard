@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<html>
+    <head>
+        <title>Flask app</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/graph.css') }}">
+    </head>
+    <body>
+        <div class="sidebar">
+            <p class="project-title">Personal Finance Dashboard<p>
+            <ul class="sidebar-links">
+                <li><a href="/">Databases</a></li>
+                <li><a id="selected" href="/graph">Graphs</a></li>
+            </ul>
+        </div>
+        <div>
+            <div class="row-flex">
+                <div class="balances">
+                    <table class="balance-table">
+                        <tbody>
+                            <tr>
+                                <th>Account</th>
+                                <th>Balance</th>
+                            </tr>
+                            <tr>
+                                <td>Debit</td>
+                                <td>{{debitBalance}}</td>
+                            </tr>
+                            <tr>
+                                <td>Credit</td>
+                                <td>{{creditBalance}}</td>
+                            </tr>
+                            <tr>
+                                <td>Venmo</td>
+                                <td>{{venmoBalance}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="all-income-graph">
+                    <h1 class="graph-comp-header">Total Balance</h1>
+                    <div id="my_dataviz6"></div>
+                </div>
+                <div class="income-graph">
+                    <h1 class="graph-comp-header">Income and Spending</h1>
+                    <select id="selectIncome">
+                        {% for item in income %}
+                        <option class="select-item" value='{{item[0]}}'>{{item[0]}}</option>
+                        {% endfor %}
+                      </select>
+                    <div id="my_dataviz5"></div>
+                </div>
+            </div>
+            <div class="row-flex">
+                <div class="full-graph">
+                    <h1 class="graph-comp-header">Income and Spending</h1>
+                    <div class="dataviz4-container">
+                        <div id="my_dataviz4"></div>
+                    </div>
+                    
+                </div>
+                <div class="list-div">
+                    <h1 class="graph-comp-header">Transactions</h1>
+                    <div id="list"></div>
+                </div>
+                
+            </div>
+            <div class = "row-flex">
+                <div class="half-graph">
+                    <h1 class="graph-comp-header">Debit Card Balance</h1>
+                    <div id="my_dataviz"></div>
+                </div>
+                <div class="half-graph">
+                    <h1 class="graph-comp-header">Credit Card Balance</h1>
+                    <div id="my_dataviz2"></div>
+                </div>
+                <div class="half-graph">
+                    <h1 class="graph-comp-header">Venmo Balance</h1>
+                    <div id="my_dataviz3"></div>
+                </div>
+            </div>
+            
+        </div>
+    </body>
+</html>
+
+<script>
+// set the dimensions and margins of the graph
+var margin = {top: 10, right: 10, bottom: 30, left: 40},
+    width = 615 - margin.left - margin.right,
+    height = 300 - margin.top - margin.bottom;
+// append the svg object to the body of the page
+
+
+//DEBIT CARD BALANCE
+var svg = d3.select("#my_dataviz")
+  .append("svg")
+    .attr("viewBox", "0 0 "+(width + margin.left + margin.right)+" "+(height + margin.top + margin.bottom))
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+d3.json("/get_debit_data", function(data){ 
+    var noZeroes = data.filter(function(d) { return d[1] !== 0; });
+    var x = d3.scaleTime()
+        .domain(d3.extent(data, function(d) {return d3.timeParse("%d/%m/%y")(d[0]); }))
+        .range([ 0, width ]);
+    svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x)
+            .tickFormat(d3.timeFormat("%b %Y")))
+    // Add Y axis
+    var y = d3.scaleLinear()
+        .domain( d3.extent(noZeroes, function(d) {return d[1];}))
+        .range([ height, 0 ]);
+    svg.append("g")
+        .call(d3.axisLeft(y));
+
+    svg.selectAll("text")
+        .attr("fill","#737e8c");
+    svg.selectAll("line")
+        .attr("stroke","#737e8c");
+    svg.selectAll("path")
+        .attr("stroke","#737e8c");
+    
+    
+    // Add the points
+    svg.append("path")
+    .datum(noZeroes)
+    .attr("fill", "none")
+    .attr("stroke", "#178be6")
+    .attr("stroke-width", 1.5)
+    .attr("d", d3.line()
+        .x(function(d) { return x(d3.timeParse("%d/%m/%y")(d[0])) })
+        .y(function(d) { return y(d[1]) })
+        )
+    svg
+    .append("g")
+    .selectAll("dot")
+    .data(noZeroes)
+    .enter()
+    .append("circle")
+        .attr("cx", function(d) { return x(d3.timeParse("%d/%m/%y")(d[0])) } )
+        .attr("cy", function(d) { return y(d[1]) } )
+        .attr("r", 5)
+        .attr("fill", "#178be6")
+    })
+
+
+
+//CREDIT CARD BALANE
+var chart2 = d3.select("#my_dataviz2")
+  .append("svg")
+    .attr("viewBox", "0 0 "+(width + margin.left + margin.right)+" "+(height + margin.top + margin.bottom))
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+d3.json("/get_credit_data", function(data){ 
+    var noZeroes = data;
+    var x = d3.scaleTime()
+        .domain(d3.extent(data, function(d) {return d3.timeParse("%d/%m/%y")(d[0]); }))
+        .range([ 0, width ]);
+    chart2.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x)
+            .tickFormat(d3.timeFormat("%b %Y")))
+            
+    // Add Y axis
+    minval = Math.abs(d3.min(noZeroes, function(d) {return d[1];}))
+    maxval = Math.abs(d3.max(noZeroes, function(d) { return d[1];}))
+    maxAxisVal = Math.max(minval, maxval)
+    var y = d3.scaleLinear()
+        .domain(d3.extent(noZeroes, function(d) {return d[1];}))
+        .range([ height, 0 ]);
+    chart2.append("g")
+        .call(d3.axisLeft(y));
+
+    chart2.selectAll("text").attr("fill","#737e8c")
+    chart2.selectAll("line").attr("stroke","#737e8c")
+    chart2.selectAll("path").attr("stroke","#737e8c")
+    
+    // Add the points
+    chart2.append("path")
+    .datum(noZeroes)
+    .attr("fill", "none")
+    .attr("stroke", "#178be6")
+    .attr("stroke-width", 1.5)
+    .attr("d", d3.line()
+        .x(function(d) { return x(d3.timeParse("%d/%m/%y")(d[0])) })
+        .y(function(d) { return y(d[1]) })
+        )
+    chart2
+        .append("g")
+        .selectAll("dot")
+        .data(noZeroes)
+        .enter()
+        .append("circle")
+            .attr("cx", function(d) { return x(d3.timeParse("%d/%m/%y")(d[0])) } )
+            .attr("cy", function(d) { return y(d[1]) } )
+            .attr("r", 5)
+            .attr("fill", "#178be6")
+        .on('mouseover', function(s,i){
+        })
+        .on('mouseleave', function(s,i){
+            d3.select("#creditBalance").remove();
+        })
+})
+
+
+
+//VENMO BALANCE
+var chart3 = d3.select("#my_dataviz3")
+  .append("svg")
+    .attr("viewBox", "0 0 "+(width + margin.left + margin.right)+" "+(height + margin.top + margin.bottom))
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+d3.json("/get_venmo_data", function(data){ 
+    var noZeroes = data;
+    var x = d3.scaleTime()
+        .domain(d3.extent(data, function(d) {return d3.timeParse("%d/%m/%y")(d[0]); }))
+        .range([ 0, width ]);
+    chart3.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x)
+            .tickFormat(d3.timeFormat("%b %Y")))
+            
+    // Add Y axis
+    minval = Math.abs(d3.min(noZeroes, function(d) {return d[1];}))
+    maxval = Math.abs(d3.max(noZeroes, function(d) { return d[1];}))
+    maxAxisVal = Math.max(minval, maxval)
+    var y = d3.scaleLinear()
+        .domain(d3.extent(noZeroes, function(d) {return d[1];}))
+        .range([ height, 0 ]);
+    chart3.append("g")
+        .call(d3.axisLeft(y));
+
+    chart3.selectAll("text").attr("fill","#737e8c")
+    chart3.selectAll("line").attr("stroke","#737e8c")
+    chart3.selectAll("path").attr("stroke","#737e8c")
+    
+    // Add the points
+    chart3.append("path")
+    .datum(noZeroes)
+    .attr("fill", "none")
+    .attr("stroke", "#178be6")
+    .attr("stroke-width", 1.5)
+    .attr("d", d3.line()
+        .x(function(d) { return x(d3.timeParse("%d/%m/%y")(d[0])) })
+        .y(function(d) { return y(d[1]) })
+        )
+    chart3
+        .append("g")
+        .selectAll("dot")
+        .data(noZeroes)
+        .enter()
+        .append("circle")
+            .attr("cx", function(d) { return x(d3.timeParse("%d/%m/%y")(d[0])) } )
+            .attr("cy", function(d) { return y(d[1]) } )
+            .attr("r", 5)
+            .attr("fill", "#178be6")
+        .on('mouseover', function(s,i){
+        })
+        .on('mouseleave', function(s,i){
+            d3.select("#creditBalance").remove();
+        })
+})
+
+
+
+
+//TOTAL BALANCE
+var chart6 = d3.select("#my_dataviz6")
+  .append("svg")
+    .attr("viewBox", "0 0 "+(width + margin.left + margin.right)+" "+(height + margin.top + margin.bottom))
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+d3.json("/get_all", function(data){ 
+    var noZeroes = data;
+    var x = d3.scaleTime()
+        .domain(d3.extent(data, function(d) {return d3.timeParse("%Y-%m-%d %H:%M:%S")(d[0]); }))
+        .range([ 0, width ]);
+    chart6.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x)
+            .tickFormat(d3.timeFormat("%b %Y")))
+            
+    // Add Y axis
+    var y = d3.scaleLinear()
+        .domain(d3.extent(noZeroes, function(d) {return d[1];}))
+        .range([ height, 0 ]);
+    chart6.append("g")
+        .call(d3.axisLeft(y));
+
+    chart6.selectAll("text").attr("fill","#737e8c")
+    chart6.selectAll("line").attr("stroke","#737e8c")
+    chart6.selectAll("path").attr("stroke","#737e8c")
+    
+    // Add the points
+    chart6.append("path")
+    .datum(noZeroes)
+    .attr("fill", "none")
+    .attr("stroke", "#178be6")
+    .attr("stroke-width", 1.5)
+    .attr("d", d3.line()
+        .x(function(d) { return x(d3.timeParse("%Y-%m-%d %H:%M:%S")(d[0])) })
+        .y(function(d) { return y(d[1]) })
+        )
+    chart6
+        .append("g")
+        .selectAll("dot")
+        .data(noZeroes)
+        .enter()
+        .append("circle")
+            .attr("cx", function(d) { return x(d3.timeParse("%Y-%m-%d %H:%M:%S")(d[0])) } )
+            .attr("cy", function(d) { return y(d[1]) } )
+            .attr("r", 5)
+            .attr("fill", "#178be6")
+        .on('mouseover', function(s,i){
+        })
+        .on('mouseleave', function(s,i){
+            d3.select("#creditBalance").remove();
+        })
+})
+
+
+
+
+//INCOME AND SPENDING
+var width3 = 900 - margin.left - margin.right
+var chart4 = d3.select("#my_dataviz4")
+    .style("position","relative")
+    .append("svg")
+        //.attr("width", width3 + margin.left + margin.right)
+        .attr("viewBox", "0 0 "+(width3 + margin.left + margin.right)+" "+(height + margin.top + margin.bottom))
+        //.attr("height", height + margin.top + margin.bottom)
+        .attr("id","chart4svg")
+    .append("g")
+        .attr("id","translatedG")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+// d3.select(".list-div")
+//     .style("max-height","100px")
+// console.log(document.getElementById('my_dataviz4'))
+var Tooltip = d3.select("#my_dataviz4")
+    .append("div")
+    .style("opacity", 0)
+    .attr("class", "tooltip")
+    .style("font-size","15px")
+    .style("color","white")
+    .style("background-color", "black")
+    .style("padding", "10px 20px")
+    .style("text-align","center")
+    .style("Position","absolute")
+    .style("width","80px")
+var Tooltip2 = d3.select("#my_dataviz4")
+    .append("div")
+    .style("opacity",0)
+    .style("width",0)
+    .style("height",0)
+    .style("border-left","10px solid transparent")
+    .style("border-right","10px solid transparent")
+    .style("border-top","10px solid black")
+    .style("Position","absolute")
+var listTooltip = d3.select("#list")
+d3.json("/get_dates", function(dates){ 
+    d3.json("/get_debit_data_weekly", function(debitdata){ 
+        d3.json("/get_credit_data_weekly", function(creditdata){ 
+        var debitdataZeros = debitdata.filter(function(d,i){ return i != 0 })
+        var creditdataZeros = creditdata.filter(function(d,i){ return i != 0 })
+        var combinedMax = Math.max(d3.max(debitdataZeros, function(d) { return d[2];}), d3.max(creditdataZeros, function(d) { return d[2];}))
+        var x = d3.scaleBand()
+            .range([ 0, width3 ])
+            .domain(dates.map((s) => s[0]))
+            .padding(0.2)
+        
+        var xAxis = d3.axisBottom(x).tickValues(dates.map( function(d,i) 
+                            { 
+                                if(i % 2===0 || d%100 == 0) return d; 
+                            })
+                                .filter(function (d) 
+                                { return !!d; } ));
+        xAxis = xAxis.tickFormat(function(e){
+                                    return "Week " + e%100
+                                });
+        chart4.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis)
+                
+        var dateFormat = d3.timeFormat("%Y");
+        var y = d3.scaleLinear()
+            .domain([0, combinedMax])
+            .range([ height, 20 ]);
+        chart4.append("g")
+            .call(d3.axisLeft(y).ticks(10));
+        chart4.selectAll("text").attr("fill","#737e8c")
+        chart4.selectAll("line").attr("stroke","#737e8c")
+        chart4.selectAll("path").attr("stroke","#737e8c")
+        //FULL GREEN
+        chart4.selectAll()
+            .data(debitdataZeros)
+            .enter()
+            .append('rect')
+            .attr("x", function(d) { return x(d[1]) } )
+            .attr("y", function(d) { return 0 } )
+            .attr("height", function(d) { return height })
+            .attr("width", x.bandwidth()/2)
+            .attr("fill", "#283141")
+            .on('mouseover', function(s,i){
+                console.log(d3.select("#chart4svg")._groups[0][0].width.animVal.value)
+                var yNew = d3.scaleLinear()
+                    .domain([0, combinedMax])
+                    .range([ d3.select("#chart4svg")._groups[0][0].height.animVal.value - margin.bottom, 33 ]);
+                var xNew = d3.scaleBand()
+                    .range([ 54, d3.select("#chart4svg")._groups[0][0].width.animVal.value])
+                    .domain(dates.map((s) => s[0]))
+                    .padding(0.2)
+                Tooltip
+                    .style("opacity",1)
+                    .html("<strong>$"+ Math.round(100*s[2])/100 + "</strong>")
+                    .style("left", (xNew(s[1])-xNew.bandwidth()/4-60) + "px")
+        	        .style("top", (yNew(s[2])-58) + "px")
+                Tooltip2
+                    .style("opacity",1)
+                    .style("left", (xNew(s[1])-xNew.bandwidth()/4-10) + "px")
+                    .style("top", (yNew(s[2])-20) + "px")
+            })
+            .on('mouseleave', function(s,i){
+                d3.select(this)
+                    .attr('opacity',1)
+            })
+        //FULL RED
+        chart4.selectAll()
+            .data(creditdataZeros)
+            .enter()
+            .append('rect')
+            .attr("x", function(d) { return x(d[1]) + x.bandwidth()/2 } )
+            .attr("y", function(d) { return 0 } )
+            .attr("height", function(d) { return height })
+            .attr("width", x.bandwidth()/2)
+            .attr("fill", "#283141")
+            .on('mouseover', function(s,i){
+                var yNew = d3.scaleLinear()
+                    .domain([0, combinedMax])
+                    .range([ d3.select("#chart4svg")._groups[0][0].height.animVal.value - margin.bottom, 33 ]);
+                var xNew = d3.scaleBand()
+                    .range([ 54, d3.select("#chart4svg")._groups[0][0].width.animVal.value])
+                    .domain(dates.map((s) => s[0]))
+                    .padding(0.2)
+                Tooltip
+                    .style("opacity",1)
+                    .html("<strong>$"+ Math.round(100*s[2])/100 + "</strong>")
+                    .style("left", (xNew(s[1])+xNew.bandwidth()/4-60) + "px")
+        	        .style("top", (yNew(s[2])-58) + "px")
+                Tooltip2
+                    .style("opacity",1)
+                    .style("left", (xNew(s[1])+xNew.bandwidth()/4-10) + "px")
+                    .style("top", (yNew(s[2])-20) + "px")
+            })
+            .on('mouseleave', function(s,i){
+                d3.select(this)
+                    .attr('opacity',1)
+            })
+        //SHORT GREEN
+        chart4.selectAll()
+            .data(debitdataZeros)
+            .enter()
+            .append('rect')
+            .attr("x", function(d) { return x(d[1]) } )
+            .attr("y", function(d) { return y(d[2]) } )
+            .attr("height", function(d) { return height - y(d[2]) })
+            .attr("width", x.bandwidth()/2)
+            .attr("fill", "#8cc350")
+            .on('mouseover', function(s,i){
+                var yNew = d3.scaleLinear()
+                    .domain([0, combinedMax])
+                    .range([ d3.select("#chart4svg")._groups[0][0].height.animVal.value - margin.bottom, 33 ]);
+                var xNew = d3.scaleBand()
+                    .range([ 54, d3.select("#chart4svg")._groups[0][0].width.animVal.value])
+                    .domain(dates.map((s) => s[0]))
+                    .padding(0.2)
+                Tooltip
+                    .style("opacity",1)
+                    .html("<strong>$"+ Math.round(100*s[2])/100 + "</strong>")
+                    .style("left", (xNew(s[1])-xNew.bandwidth()/4-60) + "px")
+        	        .style("top", (yNew(s[2])-58) + "px")
+                Tooltip2
+                    .style("opacity",1)
+                    .style("left", (xNew(s[1])-xNew.bandwidth()/4-10) + "px")
+                    .style("top", (yNew(s[2])-20) + "px")
+                d3.select(this)
+                    .attr('opacity',0.6)
+            })
+            .on('mouseleave', function(s,i){
+                d3.select(this)
+                    .attr('opacity',1)
+            })
+            .on('click', function(s,i){
+                listTooltip
+                    .html(function(){
+                        a = "<p>"+s[3] + " - " + s[4] + "</p><table><tbody>";
+                        for(var x = 0; x < s[5].length; x++){
+                            a += "<tr><td>"
+                            a += s[5][x];
+                            a += "</td><td>"
+                            a += s[6][x];
+                            a += "</td></tr>"
+                            a += "</tr>"
+                        }
+                        a +="</tbody></table>"
+                        return a;
+                    })
+            })
+
+        //SHORT RED
+        chart4.selectAll()
+            .data(creditdataZeros)
+            .enter()
+            .append('rect')
+            .attr("x", function(d) { return x(d[1]) + x.bandwidth()/2 } )
+            .attr("y", function(d) { return y(d[2]) } )
+            .attr("height", function(d) { return height - y(d[2]) })
+            .attr("width", x.bandwidth()/2)
+            .attr("fill", "#fc5d56")
+            .on('mouseover', function(s,i){
+                var yNew = d3.scaleLinear()
+                    .domain([0, combinedMax])
+                    .range([ d3.select("#chart4svg")._groups[0][0].height.animVal.value - margin.bottom, 33 ]);
+                var xNew = d3.scaleBand()
+                    .range([ 54, d3.select("#chart4svg")._groups[0][0].width.animVal.value])
+                    .domain(dates.map((s) => s[0]))
+                    .padding(0.2)
+                Tooltip
+                    .style("opacity",1)
+                    .html("<strong>$"+ Math.round(100*s[2])/100 + "</strong>")
+                    .style("left", (xNew(s[1])+xNew.bandwidth()/4-60) + "px")
+        	        .style("top", (yNew(s[2])-58) + "px")
+                Tooltip2
+                    .style("opacity",1)
+                    .style("left", (xNew(s[1])+xNew.bandwidth()/4-10) + "px")
+                    .style("top", (yNew(s[2])-20) + "px")
+                d3.select(this)
+                    .attr('opacity',0.6)
+            })
+            .on('mouseleave', function(s,i){
+                d3.select(this)
+                    .attr('opacity',1)
+                chart4.selectAll('#limit').remove()
+            })
+            .on('click', function(s,i){
+                listTooltip
+                    .html(function(){
+                        a = "<p>"+s[3] + " - " + s[4] + "</p><table><tbody>";
+                        for(var x = 0; x < s[5].length; x++){
+                            a += "<tr><td>"
+                            a += s[5][x];
+                            a += "</td><td>"
+                            a += s[6][x];
+                            a += "</td></tr>"
+                            a += "</tr>"
+                        }
+                        a +="</tbody></table>"
+                        return a;
+                    })
+            })
+        })
+        
+    })
+})
+
+function drawChart5(){
+    var width4 = window.innerWidth*0.74 - margin.left - margin.right
+    d3.selectAll(".toRemove").remove()
+    var chart5 = d3.select("#my_dataviz5")
+        .style("position","relative")
+        .append("svg")
+            .attr("class","toRemove")
+            .attr("id","svgThing")
+            //.attr("width", width3 + margin.left + margin.right)
+            .attr("viewBox", "0 0 "+(width4 + margin.left + margin.right)+" "+(height + margin.top + margin.bottom))
+            //.attr("height", height + margin.top + margin.bottom)
+        .append("g")
+            .attr("id","translatedG")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+    var thing = document.getElementById('svgThing').viewBox.animVal.width
+    var width5svg = document.getElementById('svgThing').viewBox.animVal.width-100
+    d3.json("/get_dates", function(dates){ 
+        var url = "/get_income_data?incomeName=" + d3.select('#selectIncome').property('value');
+        d3.json(url, function(debitdata){ 
+            var debitdataZeros = debitdata
+            var x = d3.scaleBand()
+                .range([ 0, width5svg ])
+                .domain(dates.map((s) => s[0]))
+                .padding(0.2)
+            var xAxis = d3.axisBottom(x).tickValues(dates.map( function(d,i) 
+                                { 
+                                    if(i % 2===0 || d%100 == 0) return d; 
+                                })
+                                    .filter(function (d) 
+                                    { return !!d; } ));
+            xAxis = xAxis.tickFormat(function(e){
+                                        if(e%100 == 0){
+                                            return (e-e%100)/100
+                                        }
+                                        return "Week " + e%100
+                                    });
+            chart5.append("g")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis)
+                    
+            var dateFormat = d3.timeFormat("%Y");
+            var y = d3.scaleLinear()
+                .domain([0, d3.max(debitdataZeros, function(d) { return d[2];})])
+                .range([ height, 20 ]);
+            chart5.append("g")
+                .call(d3.axisLeft(y).ticks(10));
+            chart5.selectAll("text").attr("fill","#737e8c")
+            chart5.selectAll("line").attr("stroke","#737e8c")
+            chart5.selectAll("path").attr("stroke","#737e8c")
+           
+            chart5.selectAll()
+                .data(debitdataZeros)
+                .enter()
+                .append('rect')
+                .attr("x", function(d) { return x(d[1]) } )
+                .attr("y", function(d) { return y(d[2]) } )
+                .attr("height", function(d) { return height - y(d[2]) })
+                .attr("width", x.bandwidth())
+                .attr("fill", "#8cc350")
+                .on('mouseover', function(s,i){
+                    d3.select(this)
+                        .attr('opacity',0.6)
+                })
+                .on('mouseleave', function(s,i){
+                    d3.select(this)
+                        .attr('opacity',1)
+                })
+                
+        })
+    })
+}
+drawChart5();
+
+d3.select('#selectIncome')
+  .on('change', function() {
+    drawChart5()
+});
+
+    
+</script>
